@@ -4,16 +4,15 @@ import click
 from datetime import date
 from mtcli.conecta import conectar, shutdown
 from mtcli.logger import setup_logger
-from . import conf
+from .conf import LOSS_LIMIT
 from .risco import carregar_estado, salvar_estado, risco_excedido
 
 log = setup_logger()
 ARQUIVO_ESTADO = "bloqueio_risco.json"
-LIMITE_DIARIO = -500.00  # Ajuste conforme sua estratégia
 
 @click.command("risco")
 @click.version_option(package_name="mtcli-risco")
-@click.option("--limite", "-l", default=LIMITE_DIARIO, help="Limite de perda diária (ex: -500)")
+@click.option("--limite", "-l", default=LOSS_LIMIT, help="Limite de perda diária (ex: -500), default -180.00.")
 def plugin(limite):
     """Monitora e bloqueia ordens se o limite de prejuízo for atingido."""
     conectar()
