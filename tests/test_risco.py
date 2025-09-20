@@ -7,7 +7,7 @@ from mtcli_risco.risco import (
     carregar_estado,
     salvar_estado,
     risco_excedido,
-    calcular_lucro_total_dia
+    calcular_lucro_total_dia,
 )
 
 TEST_ARQ = "teste_estado.json"
@@ -52,9 +52,7 @@ def test_calcular_lucro_total_dia(mock_mt5):
 
 @patch("mtcli_risco.risco.mt5")
 def test_risco_excedido_true(mock_mt5):
-    mock_mt5.history_deals_get.return_value = [
-        MagicMock(profit=-200.0, type=1)
-    ]
+    mock_mt5.history_deals_get.return_value = [MagicMock(profit=-200.0, type=1)]
     mock_mt5.account_info.return_value = MagicMock(profit=-100.0)
 
     assert risco_excedido(-250.0) is True
@@ -62,8 +60,6 @@ def test_risco_excedido_true(mock_mt5):
 
 @patch("mtcli_risco.risco.mt5")
 def test_risco_excedido_false(mock_mt5):
-    mock_mt5.history_deals_get.return_value = [
-        MagicMock(profit=500.0, type=1)
-    ]
+    mock_mt5.history_deals_get.return_value = [MagicMock(profit=500.0, type=1)]
     mock_mt5.account_info.return_value = MagicMock(profit=100.0)
     assert risco_excedido(-500.0) is False

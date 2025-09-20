@@ -36,15 +36,15 @@ def calcular_lucro_total_dia():
     lucro_realizado = 0.0
 
     if deals is not None:
-        lucro_realizado = sum(
-            deal.profit for deal in deals if deal.type in (1, 2)
-        )
+        lucro_realizado = sum(deal.profit for deal in deals if deal.type in (1, 2))
 
     info = mt5.account_info()
     lucro_aberto = info.profit if info else 0.0
 
     total = lucro_realizado + lucro_aberto
-    log.info(f"Lucro realizado: {lucro_realizado}, lucro aberto: {lucro_aberto}, total: {total}")
+    log.info(
+        f"Lucro realizado: {lucro_realizado}, lucro aberto: {lucro_aberto}, total: {total}"
+    )
     return total
 
 
