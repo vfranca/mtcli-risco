@@ -1,6 +1,6 @@
 [project]
 name = "mtcli-risco"
-version = "1.2.0"
+version = "1.2.1"
 description = "Plugin do mtcli"
 authors = [
     {name = "Valmir França da Silva",email = "vfranca3@gmail.com"}
