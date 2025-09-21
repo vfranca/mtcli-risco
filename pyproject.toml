@@ -12,6 +12,12 @@ dependencies = [
     "mtcli>=1.18.1"
 ]
 
+[project.urls]
+homepage = "https://github.com/vfranca/mtcli-risco"
+documentation = "https://mtcli-risco.readthedocs.io"
+repository = "https://github.com/vfranca/mtcli-risco"
+issues = "https://github.com/vfranca/mtcli-risco/issues"
+
 [project.entry-points."mtcli.plugins"]
 mtcli-risco = "mtcli_risco.plugin:cli"
 
