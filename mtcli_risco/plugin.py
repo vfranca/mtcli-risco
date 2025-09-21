@@ -5,7 +5,14 @@ from datetime import date
 from mtcli.conecta import conectar, shutdown
 from mtcli.logger import setup_logger
 from .conf import LOSS_LIMIT, ARQUIVO_ESTADO
-from .risco import carregar_estado, salvar_estado, risco_excedido
+from .risco import (
+    carregar_estado,
+    salvar_estado,
+    risco_excedido,
+    encerrar_todas_posicoes,
+    cancelar_todas_ordens,
+)
+
 
 log = setup_logger()
 
@@ -18,9 +25,23 @@ log = setup_logger()
     default=LOSS_LIMIT,
     help="Limite de perda diária (ex: -500), default -180.00.",
 )
-def cli(limite):
+@click.option(
+    "--status",
+    is_flag=True,
+    default=False,
+    help="Exibe o lucro total do dia atualizado e sai.",
+)
+def cli(limite, status):
     """Monitora e bloqueia ordens se o limite de prejuízo for atingido."""
     conectar()
+
+    if status:
+        from .risco import calcular_lucro_total_dia
+
+        lucro = calcular_lucro_total_dia()
+        click.echo(f"Lucro total do dia (realizado + aberto): {lucro:.2f}")
+        shutdown()
+        return
 
     estado = carregar_estado(ARQUIVO_ESTADO)
     hoje = date.today()
@@ -35,7 +56,11 @@ def cli(limite):
         return
 
     if risco_excedido(limite):
-        click.echo(f"🚫 Limite diário ({limite}) excedido. Bloqueando novas ordens.")
+        click.echo(
+            f"🚫 Limite diário ({limite}) excedido. Encerrando posições e bloqueando novas ordens."
+        )
+        encerrar_todas_posicoes()
+        cancelar_todas_ordens()
         salvar_estado(ARQUIVO_ESTADO, hoje, True)
     else:
         click.echo("Dentro do limite de risco.")

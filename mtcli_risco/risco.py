@@ -48,12 +48,61 @@ def calcular_lucro_total_dia():
     return total
 
 
+def encerrar_todas_posicoes():
+    positions = mt5.positions_get()
+    if not positions:
+        log.info("Nenhuma posição aberta para fechar.")
+        return
+
+    for pos in positions:
+        tipo_oposto = (
+            mt5.ORDER_TYPE_SELL
+            if pos.type == mt5.ORDER_TYPE_BUY
+            else mt5.ORDER_TYPE_BUY
+        )
+        ordem_fechar = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": pos.symbol,
+            "volume": pos.volume,
+            "type": tipo_oposto,
+            "position": pos.ticket,
+            "deviation": 10,
+            "magic": 1000,
+            "comment": "Fechando posição por limite de risco",
+        }
+        resultado = mt5.order_send(ordem_fechar)
+        if resultado.retcode != mt5.TRADE_RETCODE_DONE:
+            log.error(f"Falha ao fechar posição {pos.ticket}: {resultado.retcode}")
+        else:
+            log.info(f"Posição {pos.ticket} fechada com sucesso.")
+
+
+def cancelar_todas_ordens():
+    ordens = mt5.orders_get()
+    if not ordens:
+        log.info("Nenhuma ordem pendente para cancelar.")
+        return
+
+    for ordem in ordens:
+        resultado = mt5.order_delete(ordem.ticket)
+        if resultado.retcode != mt5.TRADE_RETCODE_DONE:
+            log.error(f"Falha ao cancelar ordem {ordem.ticket}: {resultado.retcode}")
+        else:
+            log.info(f"Ordem {ordem.ticket} cancelada com sucesso.")
+
+
 def risco_excedido(limite):
-    """Verifica se o prejuízo excedeu o limite permitido."""
     conectar()
     try:
         total_lucro = calcular_lucro_total_dia()
-        return total_lucro <= limite
+        if total_lucro <= limite:
+            log.warning(
+                "Limite de prejuízo excedido! Encerrando posições e cancelando ordens."
+            )
+            encerrar_todas_posicoes()
+            cancelar_todas_ordens()
+            return True
+        return False
     except Exception as e:
         log.error(f"Erro ao verificar risco: {e}")
         return False
