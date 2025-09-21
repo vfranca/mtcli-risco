@@ -1,23 +1,31 @@
-site_name: plugin-exemplo
-repo_url: https://github.com/vfranca/plugin-exemplo
-repo_name: vfranca/plugin-exemplo
+site_name: mtcli-risco
+site_description: Plugin de controle de risco para o mtcli
+site_author: Valmir França da Silva
+site_url: https://mtcli-risco.readthedocs.io
+
+repo_name: vfranca/mtcli-risco
+repo_url: https://github.com/vfranca/mtcli-risco
+edit_uri: ""
 
 theme:
-  name: mkdocs
-  locale: pt_BR
+  name: material
+  language: pt-BR
+  features:
+    - navigation.tabs
+    - navigation.instant
+    - content.code.annotate
+    - toc.integrate
 
 nav:
   - Início: index.md
-  - Contribuindo: contribuindo.md
+  - Como usar: usage.md
+  - API Interna: api.md
 
 markdown_extensions:
   - toc:
       permalink: true
-  - tables
   - admonition
-  - codehilite
-  - footnotes
-  - def_list
-  - pymdownx.extra
-  - pymdownx.highlight
+  - pymdownx.details
   - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
