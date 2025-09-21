@@ -10,18 +10,18 @@ from mtcli.logger import setup_logger
 log = setup_logger()
 
 
-def carregar_estado(arquivo_estado):
+def carregar_estado(STATUS_FILE):
     """Carrega o estado do controle de risco."""
-    if os.path.exists(arquivo_estado):
-        with open(arquivo_estado, "r") as f:
-            log.info(f"Carregando dados do arquivo {arquivo_estado}")
+    if os.path.exists(STATUS_FILE):
+        with open(STATUS_FILE, "r") as f:
+            log.info(f"Carregando dados do arquivo {STATUS_FILE}")
             return json.load(f)
     return {"data": None, "bloqueado": False}
 
 
-def salvar_estado(arquivo_estado, data, bloqueado):
+def salvar_estado(STATUS_FILE, data, bloqueado):
     """Salva o estado do controle de risco."""
-    with open(arquivo_estado, "w") as f:
+    with open(STATUS_FILE, "w") as f:
         json.dump({"data": data.isoformat(), "bloqueado": bloqueado}, f)
         log.info(f"Salvando o estado: data {data} bloqueado {bloqueado}")
 

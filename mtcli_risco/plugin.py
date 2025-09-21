@@ -4,7 +4,7 @@ import click
 from datetime import date
 from mtcli.conecta import conectar, shutdown
 from mtcli.logger import setup_logger
-from .conf import LOSS_LIMIT, ARQUIVO_ESTADO
+from .conf import LOSS_LIMIT, STATUS_FILE
 from .risco import (
     carregar_estado,
     salvar_estado,
@@ -42,12 +42,12 @@ def cli(limite, lucro):
         shutdown()
         return
 
-    estado = carregar_estado(ARQUIVO_ESTADO)
+    estado = carregar_estado(STATUS_FILE)
     hoje = date.today()
 
     if estado["data"] != hoje.isoformat():
         estado["bloqueado"] = False
-        salvar_estado(ARQUIVO_ESTADO, hoje, False)
+        salvar_estado(STATUS_FILE, hoje, False)
 
     if estado["bloqueado"]:
         click.echo("⚠ Bloqueado hoje por risco. Nenhuma ordem deve ser enviada.")
@@ -60,7 +60,7 @@ def cli(limite, lucro):
         )
         encerrar_todas_posicoes()
         cancelar_todas_ordens()
-        salvar_estado(ARQUIVO_ESTADO, hoje, True)
+        salvar_estado(STATUS_FILE, hoje, True)
     else:
         click.echo("Dentro do limite de risco.")
 
