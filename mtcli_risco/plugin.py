@@ -11,6 +11,7 @@ from .risco import (
     risco_excedido,
     encerrar_todas_posicoes,
     cancelar_todas_ordens,
+    calcular_lucro_total_dia,
 )
 
 
@@ -26,20 +27,18 @@ log = setup_logger()
     help="Limite de perda diária (ex: -500), default -180.00.",
 )
 @click.option(
-    "--status",
+    "--lucro",
     is_flag=True,
     default=False,
     help="Exibe o lucro total do dia atualizado e sai.",
 )
-def cli(limite, status):
+def cli(limite, lucro):
     """Monitora e bloqueia ordens se o limite de prejuízo for atingido."""
     conectar()
 
-    if status:
-        from .risco import calcular_lucro_total_dia
-
+    if lucro:
         lucro = calcular_lucro_total_dia()
-        click.echo(f"Lucro total do dia (realizado + aberto): {lucro:.2f}")
+        click.echo(f"Lucro total do dia: {lucro:.2f}")
         shutdown()
         return
 
