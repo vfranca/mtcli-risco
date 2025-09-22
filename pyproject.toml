@@ -1,6 +1,6 @@
 [project]
 name = "mtcli-risco"
-version = "1.3.0"
+version = "2.0.0"
 description = "Plugin do mtcli"
 authors = [
     {name = "Valmir França da Silva",email = "vfranca3@gmail.com"}
@@ -20,7 +20,6 @@ issues = "https://github.com/vfranca/mtcli-risco/issues"
 
 [project.entry-points."mtcli.plugins"]
 risco = "mtcli_risco.plugin:cli"
-risco-monitor = "mtcli_risco.monitor:monitor"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

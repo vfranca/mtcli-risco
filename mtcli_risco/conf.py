@@ -10,3 +10,4 @@ STATUS_FILE = os.getenv(
     "STATUS_FILE",
     config["DEFAULT"].get("status_file", fallback="bloqueio.json"),
 )
+INTERVALO = int(os.getenv("INTERVALO", config["DEFAULT"].getint("intervalo", fallback=60)))

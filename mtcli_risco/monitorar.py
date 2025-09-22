@@ -1,9 +1,11 @@
+"""Comando monitorar - monitora o prejuízo do dia."""
+
 import time
 import click
 from datetime import date
 from mtcli.conecta import conectar, shutdown
 from mtcli.logger import setup_logger
-from .conf import LOSS_LIMIT, STATUS_FILE
+from .conf import LOSS_LIMIT, STATUS_FILE, INTERVALO
 from .risco import (
     carregar_estado,
     salvar_estado,
@@ -15,13 +17,13 @@ from .risco import (
 log = setup_logger()
 
 
-@click.command("risco-monitor")
+@click.command("monitorar")
 @click.option("--limite", "-l", default=LOSS_LIMIT, help="Limite de perda diária.")
 @click.option(
-    "--intervalo", "-i", default=60, help="Intervalo entre verificações (segundos)."
+    "--intervalo", "-i", default=INTERVALO, help="Intervalo entre verificações (segundos) default 60."
 )
-def monitor(limite, intervalo):
-    """Monitoramento contínuo do risco em tempo real."""
+def monitorar(limite, intervalo):
+    """Monitora continuamente o risco em tempo real."""
     conectar()
     click.echo(f"Monitorando risco a cada {intervalo}s. Limite: {limite}")
     try:
@@ -34,12 +36,16 @@ def monitor(limite, intervalo):
                 salvar_estado(STATUS_FILE, hoje, False)
 
             if not estado.get("bloqueado") and risco_excedido(limite):
-                click.echo("Limite excedido. Encerrando posições.")
+                click.echo("Limite {limite} excedido. Encerrando posições.")
                 encerrar_todas_posicoes()
                 cancelar_todas_ordens()
                 salvar_estado(STATUS_FILE, hoje, True)
+            elif estado.get("bloqueado"):
+                    click.echo(f"O limite {limite} foi excedido")
+                    shutdown()
+                    return
             else:
-                click.echo("Dentro do limite.")
+                click.echo(f"Dentro do limite {limite}")
 
             time.sleep(intervalo)
     except KeyboardInterrupt:
@@ -49,4 +55,4 @@ def monitor(limite, intervalo):
 
 
 if __name__ == "__main__":
-    monitor()
+    monitorar()
