@@ -1,9 +1,9 @@
+# mtcli-risco
+    
 ![Testes](https://github.com/vfranca/mtcli-risco/actions/workflows/tests.yml/badge.svg)
   
-# mtcli-risco
-  
 Plugin para controle de risco diário integrado ao mtcli. Bloqueia automaticamente o envio de ordens caso o limite de prejuízo do dia seja ultrapassado.
-  
+    
 ---
   
 ## Instalação
