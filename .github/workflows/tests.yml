@@ -1,0 +1,26 @@
+name: Testes Automatizados
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar o repositório
+        uses: actions/checkout@v3
+
+      - name: Instalar o Poetry
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: 1.8.2
+
+      - name: Instalar dependências
+        run: poetry install
+
+      - name: Rodar testes com pytest
+        run: poetry run pytest --cov=mtcli_risco --cov-report=term-missing
