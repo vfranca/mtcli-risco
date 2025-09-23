@@ -12,10 +12,8 @@ from mtcli_risco.checar import checar
     "mtcli_risco.checar.carregar_estado",
     return_value={"data": "2020-01-01", "bloqueado": False},
 )
-@patch("mtcli_risco.checar.conectar")
-@patch("mtcli_risco.checar.shutdown")
 def test_checar_bloqueia(
-    mock_shutdown, mock_conectar, mock_carregar, mock_salvar, mock_risco_excedido
+    mock_carregar, mock_salvar, mock_risco_excedido
 ):
     runner = CliRunner()
     result = runner.invoke(checar, ["--limite", "-50"])
@@ -23,7 +21,6 @@ def test_checar_bloqueia(
     assert result.exit_code == 0
     assert "Limite" in result.output
     mock_salvar.assert_called_once()
-    mock_shutdown.assert_called_once()
 
 
 @patch("mtcli_risco.checar.risco_excedido", return_value=False)
@@ -32,10 +29,8 @@ def test_checar_bloqueia(
     "mtcli_risco.checar.carregar_estado",
     return_value={"data": "2020-01-01", "bloqueado": False},
 )
-@patch("mtcli_risco.checar.conectar")
-@patch("mtcli_risco.checar.shutdown")
 def test_checar_dentro_limite(
-    mock_shutdown, mock_conectar, mock_carregar, mock_salvar, mock_risco_excedido
+    mock_carregar, mock_salvar, mock_risco_excedido
 ):
     runner = CliRunner()
     result = runner.invoke(checar, ["--limite", "-500"])
@@ -43,31 +38,24 @@ def test_checar_dentro_limite(
     assert result.exit_code == 0
     assert "Dentro do limite de risco." in result.output
     mock_salvar.assert_called_once()
-    mock_shutdown.assert_called_once()
 
 
 @patch(
     "mtcli_risco.checar.carregar_estado",
     return_value={"data": date.today().isoformat(), "bloqueado": True},
 )
-@patch("mtcli_risco.checar.conectar")
-@patch("mtcli_risco.checar.shutdown")
-def test_checar_ja_bloqueado(mock_shutdown, mock_conectar, mock_carregar):
+def test_checar_ja_bloqueado(mock_carregar):
     runner = CliRunner()
     result = runner.invoke(checar, ["--limite", "-500"])
 
     assert result.exit_code == 0
     assert "Bloqueado hoje por risco" in result.output
-    mock_shutdown.assert_called_once()
 
 
 @patch("mtcli_risco.checar.calcular_lucro_total_dia", return_value=123.45)
-@patch("mtcli_risco.checar.conectar")
-@patch("mtcli_risco.checar.shutdown")
-def test_checar_exibe_lucro(mock_shutdown, mock_conectar, mock_lucro):
+def test_checar_exibe_lucro(mock_lucro):
     runner = CliRunner()
     result = runner.invoke(checar, ["--lucro"])
 
     assert result.exit_code == 0
     assert "Lucro total do dia: 123.45" in result.output
-    mock_shutdown.assert_called_once()

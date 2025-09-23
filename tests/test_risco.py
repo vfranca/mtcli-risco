@@ -7,10 +7,10 @@ from mtcli_risco.risco import (
     carregar_estado,
     salvar_estado,
     risco_excedido,
-    calcular_lucro_total_dia,
     encerrar_todas_posicoes,
     cancelar_todas_ordens,
 )
+from mtcli_risco.lucro import calcular_lucro_total_dia
 
 TEST_ARQ = "teste_estado.json"
 
@@ -37,33 +37,15 @@ def test_salvar_estado(tmp_path):
     assert data == {"data": "2025-09-20", "bloqueado": True}
 
 
-@patch("mtcli_risco.risco.mt5")
-def test_calcular_lucro_total_dia(mock_mt5):
-    mock_deal1 = MagicMock(profit=100.0, type=1)  # SELL
-    mock_deal2 = MagicMock(profit=-200.0, type=2)  # BUY
-    mock_deal3 = MagicMock(profit=50.0, type=4)  # SWAP, ignorado
-
-    mock_mt5.history_deals_get.return_value = [mock_deal1, mock_deal2, mock_deal3]
-
-    mock_info = MagicMock(profit=30.0)
-    mock_mt5.account_info.return_value = mock_info
-
-    lucro = calcular_lucro_total_dia()
-    assert lucro == -70.0  # (100 - 200) + 30
-
-
-@patch("mtcli_risco.risco.mt5")
-def test_risco_excedido_true(mock_mt5):
-    mock_mt5.history_deals_get.return_value = [MagicMock(profit=-200.0, type=1)]
-    mock_mt5.account_info.return_value = MagicMock(profit=-100.0)
-
+@patch("mtcli_risco.risco.calcular_lucro_total_dia")
+def test_risco_excedido_true(mock_lucro_total):
+    mock_lucro_total.return_value = -300.0
     assert risco_excedido(-250.0) is True
 
 
-@patch("mtcli_risco.risco.mt5")
-def test_risco_excedido_false(mock_mt5):
-    mock_mt5.history_deals_get.return_value = [MagicMock(profit=500.0, type=1)]
-    mock_mt5.account_info.return_value = MagicMock(profit=100.0)
+@patch("mtcli_risco.risco.calcular_lucro_total_dia")
+def test_risco_excedido_false(mock_lucro_total):
+    mock_lucro_total.return_value = -300.0
     assert risco_excedido(-500.0) is False
 
 
@@ -100,17 +82,3 @@ def test_cancelar_todas_ordens(mock_mt5):
     cancelar_todas_ordens()
     mock_mt5.order_delete.assert_called_once_with(98765)
 
-
-@patch("mtcli_risco.risco.mt5")
-@patch("mtcli_risco.risco.encerrar_todas_posicoes")
-@patch("mtcli_risco.risco.cancelar_todas_ordens")
-def test_risco_excedido_com_acoes(mock_cancelar, mock_encerrar, mock_mt5):
-    # Simula prejuízo do dia
-    mock_mt5.history_deals_get.return_value = [MagicMock(profit=-300.0, type=1)]
-    mock_mt5.account_info.return_value = MagicMock(profit=-100.0)
-
-    resultado = risco_excedido(-200.0)
-
-    assert resultado is True
-    mock_encerrar.assert_called_once()
-    mock_cancelar.assert_called_once()

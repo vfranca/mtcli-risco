@@ -3,7 +3,6 @@
 import time
 import click
 from datetime import date
-from mtcli.conecta import conectar, shutdown
 from mtcli.logger import setup_logger
 from .conf import LOSS_LIMIT, STATUS_FILE, INTERVALO
 from .risco import (
@@ -25,7 +24,6 @@ help="Intervalo entre verificações (segundos), default 60."
 )
 def monitorar(limite, intervalo):
     """Monitora continuamente o risco em tempo real."""
-    conectar()
     click.echo(f"Monitorando risco a cada {intervalo}s. Limite: {limite}")
     try:
         while True:
@@ -50,8 +48,6 @@ def monitorar(limite, intervalo):
             time.sleep(intervalo)
     except KeyboardInterrupt:
         click.echo("Monitoramento interrompido.")
-    finally:
-        shutdown()
 
 
 if __name__ == "__main__":

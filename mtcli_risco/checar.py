@@ -2,16 +2,15 @@
 
 import click
 from datetime import date
-from mtcli.conecta import conectar, shutdown
 from mtcli.logger import setup_logger
 from .conf import LOSS_LIMIT, STATUS_FILE
+from .lucro import calcular_lucro_total_dia
 from .risco import (
     carregar_estado,
     salvar_estado,
     risco_excedido,
     encerrar_todas_posicoes,
     cancelar_todas_ordens,
-    calcular_lucro_total_dia,
 )
 
 
@@ -33,13 +32,10 @@ log = setup_logger()
 )
 def checar(limite, lucro):
     """Verifica e bloqueia ordens se o limite de prejuízo for atingido."""
-    conectar()
-
     if lucro:
         lucro = calcular_lucro_total_dia()
         click.echo(f"Lucro total do dia: {lucro:.2f}")
         log.info(f"Lucro total do dia: {lucro:.2f}")
-        shutdown()
         return
 
     estado = carregar_estado(STATUS_FILE)
@@ -50,7 +46,6 @@ def checar(limite, lucro):
 
     if estado["bloqueado"]:
         click.echo("Bloqueado hoje por risco. Nenhuma ordem deve ser enviada.")
-        shutdown()
         return
 
     if risco_excedido(limite):
@@ -66,7 +61,6 @@ def checar(limite, lucro):
         log.info(f"Risco dentro do limite {limite:.2f}")
 
     salvar_estado(STATUS_FILE, hoje, estado["bloqueado"])
-    shutdown()
 
 
 if __name__ == "__main__":
