@@ -1,8 +1,8 @@
 """Comando risco: monitora e bloqueia ordens se o limite diário de prejuízo for atingido."""
 
 import click
-from .checar import checar
-from .monitorar import monitorar
+from .commands.checar import checar
+from .commands.monitorar import monitorar
 
 
 @click.group("risco")

@@ -3,9 +3,9 @@
 import click
 from datetime import date
 from mtcli.logger import setup_logger
-from .conf import LOSS_LIMIT, STATUS_FILE
-from .lucro import calcular_lucro_total_dia
-from .risco import (
+from ..conf import LOSS_LIMIT, STATUS_FILE
+from ..lucro import calcular_lucro_total_dia
+from ..risco import (
     carregar_estado,
     salvar_estado,
     risco_excedido,
