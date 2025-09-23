@@ -19,8 +19,10 @@ log = setup_logger()
 @click.command("monitorar")
 @click.option("--limite", "-l", default=LOSS_LIMIT, help="Limite de perda diária.")
 @click.option(
-    "--intervalo", "-i", default=INTERVALO,
-help="Intervalo entre verificações (segundos), default 60."
+    "--intervalo",
+    "-i",
+    default=INTERVALO,
+    help="Intervalo entre verificações (segundos), default 60.",
 )
 def monitorar(limite, intervalo):
     """Monitora continuamente o risco em tempo real."""

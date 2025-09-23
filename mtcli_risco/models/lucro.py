@@ -27,7 +27,7 @@ def calcular_lucro_realizado() -> float:
     return lucro_realizado
 
 
-def lucro_aberto() -> float:
+def obter_lucro_aberto() -> float:
     """Obtem o lucro em aberto."""
     with mt5_conexao():
         info = mt5.account_info()
@@ -40,10 +40,10 @@ def lucro_aberto() -> float:
 
 def calcular_lucro_total_dia() -> float:
     """Calcula o lucro total do dia."""
-    lucro_realizado = calcular_lucro_realizado()
-    lucro_aberto = calcular_lucro_aberto()
-    total = lucro_realizado + lucro_aberto
+    realizado = calcular_lucro_realizado()
+    aberto = obter_lucro_aberto()
+    total = realizado + aberto
     log.info(
-        f"Lucro realizado: {lucro_realizado:.2f}, lucro aberto: {lucro_aberto:.2f}, total: {total:.2f}"
+        f"Lucro realizado: {realizado:.2f}, lucro aberto: {aberto:.2f}, total: {total:.2f}"
     )
     return total

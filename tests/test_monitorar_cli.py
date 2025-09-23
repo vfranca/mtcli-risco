@@ -2,17 +2,17 @@ import pytest
 from click.testing import CliRunner
 from unittest.mock import patch, MagicMock
 from datetime import date
-from mtcli_risco.monitorar import monitorar
+from mtcli_risco.commands.monitorar import monitorar
 
 
-@patch("mtcli_risco.monitorar.risco_excedido", return_value=True)
-@patch("mtcli_risco.monitorar.salvar_estado")
+@patch("mtcli_risco.commands.monitorar.risco_excedido", return_value=True)
+@patch("mtcli_risco.commands.monitorar.salvar_estado")
 @patch(
-    "mtcli_risco.monitorar.carregar_estado",
+    "mtcli_risco.commands.monitorar.carregar_estado",
     return_value={"data": "2020-01-01", "bloqueado": False},
 )
-@patch("mtcli_risco.monitorar.encerrar_todas_posicoes")
-@patch("mtcli_risco.monitorar.cancelar_todas_ordens")
+@patch("mtcli_risco.commands.monitorar.encerrar_todas_posicoes")
+@patch("mtcli_risco.commands.monitorar.cancelar_todas_ordens")
 @patch("time.sleep", side_effect=KeyboardInterrupt)
 def test_monitorar_excede_limite(
     mock_sleep,
@@ -33,10 +33,10 @@ def test_monitorar_excede_limite(
     mock_salvar.assert_called()
 
 
-@patch("mtcli_risco.monitorar.risco_excedido", return_value=False)
-@patch("mtcli_risco.monitorar.salvar_estado")
+@patch("mtcli_risco.commands.monitorar.risco_excedido", return_value=False)
+@patch("mtcli_risco.commands.monitorar.salvar_estado")
 @patch(
-    "mtcli_risco.monitorar.carregar_estado",
+    "mtcli_risco.commands.monitorar.carregar_estado",
     return_value={"data": "2020-01-01", "bloqueado": False},
 )
 @patch("time.sleep", side_effect=KeyboardInterrupt)
@@ -54,14 +54,14 @@ def test_monitorar_dentro_limite(
     mock_salvar.assert_called()
 
 
-@patch("mtcli_risco.monitorar.risco_excedido")
-@patch("mtcli_risco.monitorar.salvar_estado")
+@patch("mtcli_risco.commands.monitorar.risco_excedido")
+@patch("mtcli_risco.commands.monitorar.salvar_estado")
 @patch(
-    "mtcli_risco.monitorar.carregar_estado",
+    "mtcli_risco.commands.monitorar.carregar_estado",
     return_value={"data": date.today().isoformat(), "bloqueado": True},
 )
-@patch("mtcli_risco.monitorar.encerrar_todas_posicoes")
-@patch("mtcli_risco.monitorar.cancelar_todas_ordens")
+@patch("mtcli_risco.commands.monitorar.encerrar_todas_posicoes")
+@patch("mtcli_risco.commands.monitorar.cancelar_todas_ordens")
 @patch("time.sleep", side_effect=KeyboardInterrupt)
 def test_monitorar_estado_ja_bloqueado(
     mock_sleep,
@@ -78,4 +78,3 @@ def test_monitorar_estado_ja_bloqueado(
     assert f"Sistema bloqueado hoje" in result.output
     mock_encerrar.assert_not_called()
     mock_cancelar.assert_not_called()
-

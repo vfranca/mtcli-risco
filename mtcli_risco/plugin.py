@@ -3,6 +3,7 @@
 import click
 from .commands.checar import checar
 from .commands.monitorar import monitorar
+from .commands.lucro import lucro
 
 
 @click.group("risco")
@@ -14,6 +15,7 @@ def cli():
 
 cli.add_command(checar)
 cli.add_command(monitorar)
+cli.add_command(lucro)
 
 
 if __name__ == "__main__":

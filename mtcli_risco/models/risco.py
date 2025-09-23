@@ -72,7 +72,9 @@ def cancelar_todas_ordens():
         for ordem in ordens:
             resultado = mt5.order_delete(ordem.ticket)
             if resultado.retcode != mt5.TRADE_RETCODE_DONE:
-                log.error(f"Falha ao cancelar ordem {ordem.ticket}: {resultado.retcode}")
+                log.error(
+                    f"Falha ao cancelar ordem {ordem.ticket}: {resultado.retcode}"
+                )
             else:
                 log.info(f"Ordem {ordem.ticket} cancelada com sucesso.")
 
@@ -82,7 +84,9 @@ def risco_excedido(limite):
     try:
         total_lucro = calcular_lucro_total_dia()
         if total_lucro <= limite:
-            log.info(f"Limite de prejuízo excedido! prejuízo: {total_lucro:.2f}, limite: {limite:.2f}")
+            log.info(
+                f"Limite de prejuízo excedido! prejuízo: {total_lucro:.2f}, limite: {limite:.2f}"
+            )
             return True
         return False
     except Exception as e:
