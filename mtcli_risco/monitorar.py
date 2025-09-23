@@ -20,7 +20,8 @@ log = setup_logger()
 @click.command("monitorar")
 @click.option("--limite", "-l", default=LOSS_LIMIT, help="Limite de perda diária.")
 @click.option(
-    "--intervalo", "-i", default=INTERVALO, help="Intervalo entre verificações (segundos) default 60."
+    "--intervalo", "-i", default=INTERVALO,
+help="Intervalo entre verificações (segundos), default 60."
 )
 def monitorar(limite, intervalo):
     """Monitora continuamente o risco em tempo real."""
@@ -36,14 +37,13 @@ def monitorar(limite, intervalo):
                 salvar_estado(STATUS_FILE, hoje, False)
 
             if not estado.get("bloqueado") and risco_excedido(limite):
-                click.echo("Limite {limite} excedido. Encerrando posições.")
+                click.echo(f"Limite {limite} excedido. Encerrando posições.")
+                log.info(f"Risco excedido em {limite}. Encerrando posições.")
                 encerrar_todas_posicoes()
                 cancelar_todas_ordens()
                 salvar_estado(STATUS_FILE, hoje, True)
             elif estado.get("bloqueado"):
-                    click.echo(f"O limite {limite} foi excedido")
-                    shutdown()
-                    return
+                click.echo(f"O limite {limite} foi excedido. Sistema bloqueado hoje.")
             else:
                 click.echo(f"Dentro do limite {limite}")
 
