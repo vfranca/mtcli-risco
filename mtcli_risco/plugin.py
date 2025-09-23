@@ -1,4 +1,4 @@
-"""Comando risco adiciona risco ao mtcli."""
+"""Comando risco: monitora e bloqueia ordens se o limite diário de prejuízo for atingido."""
 
 import click
 from .checar import checar

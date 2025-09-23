@@ -19,7 +19,7 @@ repository = "https://github.com/vfranca/mtcli-risco"
 issues = "https://github.com/vfranca/mtcli-risco/issues"
 
 [project.entry-points."mtcli.plugins"]
-risco = "mtcli_risco.plugin:cli"
+mtcli-risco = "mtcli_risco.plugin:cli"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
