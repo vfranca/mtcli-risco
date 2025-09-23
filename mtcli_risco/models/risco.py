@@ -6,7 +6,7 @@ import os
 from datetime import date, datetime, time
 from mtcli.logger import setup_logger
 from .lucro import calcular_lucro_total_dia
-from .mt5_context import mt5_conexao
+from ..mt5_context import mt5_conexao
 
 
 log = setup_logger()

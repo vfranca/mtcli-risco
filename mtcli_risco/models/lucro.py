@@ -4,7 +4,7 @@ import MetaTrader5 as mt5
 from datetime import date, datetime, time
 from mtcli.conecta import conectar, shutdown
 from mtcli.logger import setup_logger
-from .mt5_context import mt5_conexao
+from ..mt5_context import mt5_conexao
 
 
 log = setup_logger()
