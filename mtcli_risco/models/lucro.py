@@ -18,10 +18,19 @@ def calcular_lucro_realizado() -> float:
 
     with mt5_conexao():
         deals = mt5.history_deals_get(inicio, fim)
+        log.debug(f"Deals recebidos: {deals}")
+        log.debug(f"Tipo de deals: {type(deals)}")
 
     lucro_realizado = 0.0
-    if deals is not None:
-        lucro_realizado = sum(deal.profit for deal in deals if deal.type in (1, 2))
+
+    if deals is None:
+        log.warning("Nenhum deal retornado.")
+        return 0.0
+
+    if not isinstance(deals, (list, tuple)):
+        deals = [deals]
+
+    lucro_realizado = sum(deal.profit for deal in deals if deal.type in (1, 2))
     log.info(f"lucro realizado: {lucro_realizado:.2f}")
 
     return lucro_realizado
