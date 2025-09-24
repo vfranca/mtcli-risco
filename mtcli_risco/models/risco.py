@@ -53,7 +53,13 @@ def encerrar_todas_posicoes():
                 "magic": 1000,
                 "comment": "Fechando posição por limite de risco",
             }
+            log.info(f"Requizição para encerramento de posições pelo risco: {ordem_fechar}")
             resultado = mt5.order_send(ordem_fechar)
+
+            if resultado is None:
+                log.error("Erro ao enviar ordem: resultado é None.")
+                continue
+
             if resultado.retcode != mt5.TRADE_RETCODE_DONE:
                 log.error(f"Falha ao fechar posição {pos.ticket}: {resultado.retcode}")
             else:

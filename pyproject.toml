@@ -1,6 +1,6 @@
 [project]
 name = "mtcli-risco"
-version = "2.1.1"
+version = "2.1.2"
 description = "Plugin mtcli para controle de loss diário"
 authors = [
     {name = "Valmir França da Silva",email = "vfranca3@gmail.com"}

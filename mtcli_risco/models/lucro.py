@@ -18,8 +18,8 @@ def calcular_lucro_realizado() -> float:
 
     with mt5_conexao():
         deals = mt5.history_deals_get(inicio, fim)
-        log.debug(f"Deals recebidos: {deals}")
-        log.debug(f"Tipo de deals: {type(deals)}")
+        log.info(f"Deals recebidos: {deals}")
+        log.info(f"Tipo de deals: {type(deals)}")
 
     lucro_realizado = 0.0
 
