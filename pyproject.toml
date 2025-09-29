@@ -1,6 +1,6 @@
 [project]
 name = "mtcli-risco"
-version = "2.1.2"
+version = "2.2.0.dev0"
 description = "Plugin mtcli para controle de loss diário"
 authors = [
     {name = "Valmir França da Silva",email = "vfranca3@gmail.com"}
@@ -19,7 +19,7 @@ repository = "https://github.com/vfranca/mtcli-risco"
 issues = "https://github.com/vfranca/mtcli-risco/issues"
 
 [project.entry-points."mtcli.plugins"]
-mtcli-risco = "mtcli_risco.plugin:cli"
+mtcli_risco = "mtcli_risco.plugin:cli"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

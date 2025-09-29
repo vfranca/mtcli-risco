@@ -2,6 +2,7 @@
 
 import click
 from .commands.checar import checar
+from .commands.operar import operar
 from .commands.monitorar import monitorar
 from .commands.lucro import lucro
 
@@ -14,6 +15,7 @@ def cli():
 
 
 cli.add_command(checar)
+cli.add_command(operar)
 cli.add_command(monitorar)
 cli.add_command(lucro)
 
