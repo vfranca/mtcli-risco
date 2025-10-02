@@ -2,7 +2,7 @@
 
 import click
 from mtcli.logger import setup_logger
-from ..models.lucro import (
+from mtcli_risco.models.trades import (
     obter_lucro_aberto,
     calcular_lucro_realizado,
     calcular_lucro_total_dia,
@@ -12,7 +12,7 @@ from ..models.lucro import (
 log = setup_logger()
 
 
-@click.command("lucro")
+@click.command("trades")
 @click.option(
     "--aberto", "-a", is_flag=True, default=False, help="Exibe o lucro aberto."
 )
@@ -26,7 +26,7 @@ log = setup_logger()
 @click.option(
     "--total", "-t", is_flag=True, default=False, help="Exibe o lucro total do dia."
 )
-def lucro(aberto, realizado, total):
+def trades(aberto, realizado, total):
     """Exibe os lucros aberto, realizado e total do dia."""
     lucro_aberto = obter_lucro_aberto()
     lucro_realizado = calcular_lucro_realizado()
@@ -50,4 +50,4 @@ def lucro(aberto, realizado, total):
 
 
 if __name__ == "__main__":
-    lucro()
+    trades()

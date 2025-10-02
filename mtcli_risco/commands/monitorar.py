@@ -4,8 +4,8 @@ import time
 import click
 from datetime import date
 from mtcli.logger import setup_logger
-from ..conf import LOSS_LIMIT, STATUS_FILE, INTERVALO
-from ..models.risco import (
+from mtcli_risco.conf import LOSS_LIMIT, STATUS_FILE, INTERVALO
+from mtcli_risco.models.checar import (
     carregar_estado,
     salvar_estado,
     risco_excedido,

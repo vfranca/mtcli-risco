@@ -1,12 +1,12 @@
-"""Lógica do plugin risco."""
+"""Verifica dados de risco."""
 
 import MetaTrader5 as mt5
 import json
 import os
 from datetime import date, datetime, time
 from mtcli.logger import setup_logger
-from .lucro import calcular_lucro_total_dia
-from ..mt5_context import mt5_conexao
+from .trades import calcular_lucro_total_dia
+from mtcli_risco.mt5_context import mt5_conexao
 
 
 log = setup_logger()
@@ -53,7 +53,9 @@ def encerrar_todas_posicoes():
                 "magic": 1000,
                 "comment": "Fechando posição por limite de risco",
             }
-            log.info(f"Requizição para encerramento de posições pelo risco: {ordem_fechar}")
+            log.info(
+                f"Requizição para encerramento de posições pelo risco: {ordem_fechar}"
+            )
             resultado = mt5.order_send(ordem_fechar)
 
             if resultado is None:

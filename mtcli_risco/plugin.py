@@ -2,9 +2,8 @@
 
 import click
 from .commands.checar import checar
-from .commands.operar import operar
 from .commands.monitorar import monitorar
-from .commands.lucro import lucro
+from .commands.trades import trades
 
 
 @click.group("risco")
@@ -14,10 +13,9 @@ def cli():
     pass
 
 
-cli.add_command(checar)
-cli.add_command(operar)
-cli.add_command(monitorar)
-cli.add_command(lucro)
+cli.add_command(checar, name="checar")
+cli.add_command(monitorar, name="monitorar")
+cli.add_command(trades, name="trades")
 
 
 if __name__ == "__main__":

@@ -10,6 +10,29 @@ from ..mt5_context import mt5_conexao
 log = setup_logger()
 
 
+def contar_transacoes_realizadas() -> int:
+    """Conta a quantidade de posições encerradas no dia (transações de fechamento)."""
+    hoje = datetime.now().date()
+    inicio = datetime.combine(hoje, time(0, 0))
+    fim = datetime.combine(hoje, time(23, 59))
+
+    with mt5_conexao():
+        deals = mt5.history_deals_get(inicio, fim)
+
+    if deals is None:
+        log.warning("Nenhum deal retornado.")
+        return 0
+
+    if not isinstance(deals, (list, tuple)):
+        deals = [deals]
+
+    # Types 1 = buy, 2 = sell → usados para fechar posições
+    transacoes = [d for d in deals if d.type in (1, 2)]
+
+    log.info(f"Transações realizadas hoje: {len(transacoes)}")
+    return len(transacoes)
+
+
 def calcular_lucro_realizado() -> float:
     """Calcula o lucro realizado do dia."""
     hoje = datetime.now().date()
@@ -18,21 +41,17 @@ def calcular_lucro_realizado() -> float:
 
     with mt5_conexao():
         deals = mt5.history_deals_get(inicio, fim)
-        log.info(f"Deals recebidos: {deals}")
-        log.info(f"Tipo de deals: {type(deals)}")
+        log.info(f"Deals recebidos: {len(deals) if deals else 0}")
 
-    lucro_realizado = 0.0
-
-    if deals is None:
+    if deals is None or len(deals) == 0:
         log.warning("Nenhum deal retornado.")
         return 0.0
 
-    if not isinstance(deals, (list, tuple)):
-        deals = [deals]
+    lucro_realizado = sum(
+        deal.profit for deal in deals if deal.entry == mt5.DEAL_ENTRY_OUT
+    )
 
-    lucro_realizado = sum(deal.profit for deal in deals if deal.type in (1, 2))
-    log.info(f"lucro realizado: {lucro_realizado:.2f}")
-
+    log.info(f"Lucro realizado do dia: {lucro_realizado:.2f}")
     return lucro_realizado
 
 
