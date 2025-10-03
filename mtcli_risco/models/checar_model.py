@@ -5,7 +5,7 @@ import json
 import os
 from datetime import date, datetime, time
 from mtcli.logger import setup_logger
-from .trades import calcular_lucro_total_dia
+from .trades_model import calcular_lucro_total_dia
 from mtcli_risco.mt5_context import mt5_conexao
 
 

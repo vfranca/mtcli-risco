@@ -4,8 +4,8 @@ import click
 from datetime import date
 from mtcli.logger import setup_logger
 from mtcli_risco.conf import LOSS_LIMIT, STATUS_FILE
-from mtcli_risco.models.trades import calcular_lucro_total_dia
-from mtcli_risco.models.checar import (
+from mtcli_risco.models.trades_model import calcular_lucro_total_dia
+from mtcli_risco.models.checar_model import (
     carregar_estado,
     salvar_estado,
     risco_excedido,
@@ -31,7 +31,7 @@ log = setup_logger()
     help="Exibe o lucro total do dia atualizado e sai.",
 )
 def checar(limite, lucro):
-    """Verifica e bloqueia ordens se o limite de prejuízo for atingido."""
+    """Verifica se o limite de prejuizo foi atingido."""
     if lucro:
         lucro = calcular_lucro_total_dia()
         click.echo(f"Lucro total do dia: {lucro:.2f}")

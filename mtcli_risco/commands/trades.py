@@ -2,7 +2,7 @@
 
 import click
 from mtcli.logger import setup_logger
-from mtcli_risco.models.trades import (
+from mtcli_risco.models.trades_model import (
     obter_lucro_aberto,
     calcular_lucro_realizado,
     calcular_lucro_total_dia,
