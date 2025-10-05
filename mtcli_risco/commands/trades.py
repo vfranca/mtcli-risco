@@ -13,6 +13,7 @@ log = setup_logger()
 
 
 @click.command("trades")
+@click.version_option(package_name="mtcli-risco")
 @click.option(
     "--aberto", "-a", is_flag=True, default=False, help="Exibe o lucro aberto."
 )

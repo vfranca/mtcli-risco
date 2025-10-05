@@ -18,6 +18,7 @@ log = setup_logger()
 
 
 @click.command("checar")
+@click.version_option(package_name="mtcli-risco")
 @click.option(
     "--limite",
     "-l",

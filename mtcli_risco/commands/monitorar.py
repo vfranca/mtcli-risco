@@ -17,6 +17,7 @@ log = setup_logger()
 
 
 @click.command("monitorar")
+@click.version_option(package_name="mtcli-risco")
 @click.option("--limite", "-l", default=LOSS_LIMIT, help="Limite de perda diária.")
 @click.option(
     "--intervalo",
