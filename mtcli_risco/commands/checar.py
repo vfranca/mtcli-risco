@@ -17,7 +17,10 @@ from mtcli_risco.models.checar_model import (
 log = setup_logger()
 
 
-@click.command("checar")
+@click.command(
+    "checar",
+    help="Verifica se o limite diário de prejuízo foi atingido, com base nas regras configuradas.",
+)
 @click.version_option(package_name="mtcli-risco")
 @click.option(
     "--limite",

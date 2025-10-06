@@ -12,7 +12,9 @@ from mtcli_risco.models.trades_model import (
 log = setup_logger()
 
 
-@click.command("trades")
+@click.command(
+    "trades", help="Exibe os lucros realizados, abertos e totais do dia atual."
+)
 @click.version_option(package_name="mtcli-risco")
 @click.option(
     "--aberto", "-a", is_flag=True, default=False, help="Exibe o lucro aberto."

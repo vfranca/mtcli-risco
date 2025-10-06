@@ -16,7 +16,9 @@ from mtcli_risco.models.checar_model import (
 log = setup_logger()
 
 
-@click.command("monitorar")
+@click.command(
+    "monitorar", help="Inicia o monitoramento contínuo do risco diário em tempo real."
+)
 @click.version_option(package_name="mtcli-risco")
 @click.option("--limite", "-l", default=LOSS_LIMIT, help="Limite de perda diária.")
 @click.option(
