@@ -1,4 +1,8 @@
-"""Comando monitorar - monitora o prejuízo do dia."""
+"""
+Comando monitorar.
+
+Monitora continuamente o risco diário em intervalos regulares.
+"""
 
 import time
 import click
@@ -17,7 +21,8 @@ log = setup_logger()
 
 
 @click.command(
-    "monitorar", help="Inicia o monitoramento contínuo do risco diário em tempo real."
+    "monitorar",
+    help="Monitora continuamente o risco diário em tempo real.",
 )
 @click.version_option(package_name="mtcli-risco")
 @click.option("--limite", "-l", default=LOSS_LIMIT, help="Limite de perda diária.")
@@ -25,35 +30,34 @@ log = setup_logger()
     "--intervalo",
     "-i",
     default=INTERVALO,
-    help="Intervalo entre verificações (segundos), default 60.",
+    help="Intervalo entre verificações (segundos).",
 )
-def monitorar(limite, intervalo):
-    """Monitora continuamente o risco em tempo real."""
-    click.echo(f"Monitorando risco a cada {intervalo}s. Limite: {limite}")
+def monitorar_cmd(limite: float, intervalo: int):
+    """
+    Inicia o monitoramento contínuo do risco diário.
+    """
+    click.echo(f"Monitorando risco a cada {intervalo}s | Limite: {limite:.2f}")
+    log.info(f"[MONITOR] Iniciado | limite={limite} intervalo={intervalo}s")
+
     try:
         while True:
             hoje = date.today()
             estado = carregar_estado(STATUS_FILE)
 
-            if estado.get("data") != hoje.isoformat():
-                estado["bloqueado"] = False
+            if estado["data"] != hoje.isoformat():
+                log.info("[ESTADO] Novo dia detectado, resetando bloqueio.")
                 salvar_estado(STATUS_FILE, hoje, False)
+                estado["bloqueado"] = False
 
-            if not estado.get("bloqueado") and risco_excedido(limite):
-                click.echo(f"Limite {limite} excedido. Encerrando posições.")
-                log.info(f"Risco excedido em {limite}. Encerrando posições.")
+            if not estado["bloqueado"] and risco_excedido(limite):
+                click.echo(f"Limite {limite:.2f} excedido. Encerrando posições.")
+                log.warning("[RISCO] Limite excedido durante monitoramento.")
                 encerrar_todas_posicoes()
                 cancelar_todas_ordens()
                 salvar_estado(STATUS_FILE, hoje, True)
-            elif estado.get("bloqueado"):
-                click.echo(f"O limite {limite} foi excedido. Sistema bloqueado hoje.")
-            else:
-                click.echo(f"Dentro do limite {limite}")
 
             time.sleep(intervalo)
+
     except KeyboardInterrupt:
         click.echo("Monitoramento interrompido.")
-
-
-if __name__ == "__main__":
-    monitorar()
+        log.info("[MONITOR] Interrompido pelo usuário.")

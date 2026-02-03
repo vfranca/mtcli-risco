@@ -1,4 +1,9 @@
-"""Comando checar - verifica se o loss limit foi atingido."""
+"""
+Comando checar.
+
+Verifica se o limite diário de prejuízo foi atingido e,
+se necessário, encerra posições e bloqueia novas ordens.
+"""
 
 import click
 from datetime import date
@@ -13,59 +18,58 @@ from mtcli_risco.models.checar_model import (
     cancelar_todas_ordens,
 )
 
-
 log = setup_logger()
 
 
 @click.command(
     "checar",
-    help="Verifica se o limite diário de prejuízo foi atingido, com base nas regras configuradas.",
+    help="Verifica se o limite diário de prejuízo foi atingido.",
 )
 @click.version_option(package_name="mtcli-risco")
 @click.option(
     "--limite",
     "-l",
     default=LOSS_LIMIT,
-    help="Limite de perda diária (ex: -500), default -180.00.",
+    help="Limite de perda diária (ex: -500).",
 )
 @click.option(
     "--lucro",
     is_flag=True,
     default=False,
-    help="Exibe o lucro total do dia atualizado e sai.",
+    help="Exibe o lucro total do dia e encerra.",
 )
-def checar(limite, lucro):
-    """Verifica se o limite de prejuizo foi atingido."""
+def checar_cmd(limite: float, lucro: bool):
+    """
+    Executa uma verificação pontual do risco diário.
+    """
     if lucro:
-        lucro = calcular_lucro_total_dia()
-        click.echo(f"Lucro total do dia: {lucro:.2f}")
-        log.info(f"Lucro total do dia: {lucro:.2f}")
+        total = calcular_lucro_total_dia()
+        click.echo(f"Lucro total do dia: {total:.2f}")
+        log.info(f"[RISCO] Lucro total do dia: {total:.2f}")
         return
 
-    estado = carregar_estado(STATUS_FILE)
     hoje = date.today()
+    estado = carregar_estado(STATUS_FILE)
 
+    # Reset diário
     if estado["data"] != hoje.isoformat():
+        log.info("[ESTADO] Novo dia detectado, resetando bloqueio.")
         estado["bloqueado"] = False
+        salvar_estado(STATUS_FILE, hoje, False)
 
     if estado["bloqueado"]:
-        click.echo("Bloqueado hoje por risco. Nenhuma ordem deve ser enviada.")
+        click.echo("Sistema bloqueado hoje por limite de risco.")
+        log.warning("[RISCO] Sistema já bloqueado hoje.")
         return
 
     if risco_excedido(limite):
         click.echo(
-            f"Limite {limite:.2f} excedido. Encerrando posições e bloqueando novas ordens."
+            f"Limite {limite:.2f} excedido. Encerrando posições e bloqueando ordens."
         )
-        log.info(f"Risco {limite:.2f} excedido, iniciando encerramento de posições.")
+        log.warning(f"[RISCO] Limite {limite:.2f} excedido.")
         encerrar_todas_posicoes()
         cancelar_todas_ordens()
-        estado["bloqueado"] = True
+        salvar_estado(STATUS_FILE, hoje, True)
     else:
         click.echo("Dentro do limite de risco.")
-        log.info(f"Risco dentro do limite {limite:.2f}")
-
-    salvar_estado(STATUS_FILE, hoje, estado["bloqueado"])
-
-
-if __name__ == "__main__":
-    checar()
+        log.info(f"[RISCO] Dentro do limite {limite:.2f}.")

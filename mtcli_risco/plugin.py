@@ -1,11 +1,12 @@
-"""Registra os comandos do plugin."""
+"""
+Registro do plugin mtcli-risco no mtcli principal.
+"""
 
-from .commands.checar import checar
-from .commands.monitorar import monitorar
-from .commands.trades import trades
+from .cli import cli as risco_cli
 
 
-def register(cli):
-    cli.add_command(checar, name="checar")
-    cli.add_command(monitorar, name="monitorar")
-    cli.add_command(trades, name="trades")
+def register(main_cli):
+    """
+    Registra o grupo de comandos 'risco' no mtcli principal.
+    """
+    main_cli.add_command(risco_cli, name="risco")

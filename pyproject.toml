@@ -1,6 +1,6 @@
 [project]
 name = "mtcli-risco"
-version = "2.2.2"
+version = "2.3.0.dev0"
 description = "Plugin mtcli para controle de loss diário"
 authors = [
     {name = "Valmir França da Silva",email = "vfranca3@gmail.com"}
@@ -9,7 +9,9 @@ readme = "README.md"
 license = "GPL-3.0"
 requires-python = ">=3.10,<3.14"
 dependencies = [
-    "mtcli>=1.18.1"
+    "mtcli>=1.18.1",
+    "click (>=8.3.1,<9.0.0)",
+    "metatrader5 (>=5.0.5572,<6.0.0)"
 ]
 
 [project.urls]
@@ -19,7 +21,7 @@ repository = "https://github.com/vfranca/mtcli-risco"
 issues = "https://github.com/vfranca/mtcli-risco/issues"
 
 [project.entry-points."mtcli.plugins"]
-mtcli_risco = "mtcli_risco.plugin:register"
+risco = "mtcli_risco.plugin:register"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

@@ -1,49 +1,67 @@
-"""Verifica dados de risco."""
+"""
+Model de controle de risco.
 
-import MetaTrader5 as mt5
+Responsável por:
+- persistência de estado diário
+- verificação de limite de prejuízo
+- encerramento de posições
+- cancelamento de ordens
+"""
+
 import json
 import os
-from datetime import date, datetime, time
+from datetime import date
+import MetaTrader5 as mt5
 from mtcli.logger import setup_logger
-from .trades_model import calcular_lucro_total_dia
 from mtcli_risco.mt5_context import mt5_conexao
-
+from .trades_model import calcular_lucro_total_dia
 
 log = setup_logger()
 
 
-def carregar_estado(STATUS_FILE):
-    """Carrega o estado do controle de risco."""
-    if os.path.exists(STATUS_FILE):
-        with open(STATUS_FILE, "r") as f:
-            log.info(f"Carregando dados do arquivo {STATUS_FILE}")
+def carregar_estado(status_file: str) -> dict:
+    """
+    Carrega o estado persistido do controle de risco.
+    """
+    if os.path.exists(status_file):
+        with open(status_file, "r") as f:
+            log.info(f"[ESTADO] Carregando {status_file}")
             return json.load(f)
-    return {"data": None, "bloqueado": False}
+    return {"data": "", "bloqueado": False}
 
 
-def salvar_estado(STATUS_FILE, data, bloqueado):
-    """Salva o estado do controle de risco."""
-    with open(STATUS_FILE, "w") as f:
-        json.dump({"data": data.isoformat(), "bloqueado": bloqueado}, f)
-        log.info(f"Salvando o estado: data {data} bloqueado {bloqueado}")
+def salvar_estado(status_file: str, data: date, bloqueado: bool) -> None:
+    """
+    Persiste o estado diário do controle de risco.
+    """
+    with open(status_file, "w") as f:
+        json.dump(
+            {"data": data.isoformat(), "bloqueado": bloqueado},
+            f,
+            indent=2,
+        )
+    log.info(f"[ESTADO] Salvo | data={data.isoformat()} bloqueado={bloqueado}")
 
 
-def encerrar_todas_posicoes():
-    """Encerra todas as posições abertas."""
+def encerrar_todas_posicoes() -> None:
+    """
+    Encerra todas as posições abertas no MT5.
+    """
     with mt5_conexao():
         positions = mt5.positions_get()
-    if not positions:
-        log.info("Nenhuma posição aberta para fechar.")
-        return
 
-    with mt5_conexao():
+        if not positions:
+            log.info("[MT5] Nenhuma posição aberta.")
+            return
+
         for pos in positions:
             tipo_oposto = (
                 mt5.ORDER_TYPE_SELL
                 if pos.type == mt5.ORDER_TYPE_BUY
                 else mt5.ORDER_TYPE_BUY
             )
-            ordem_fechar = {
+
+            ordem = {
                 "action": mt5.TRADE_ACTION_DEAL,
                 "symbol": pos.symbol,
                 "volume": pos.volume,
@@ -51,52 +69,49 @@ def encerrar_todas_posicoes():
                 "position": pos.ticket,
                 "deviation": 10,
                 "magic": 1000,
-                "comment": "Fechando posição por limite de risco",
+                "comment": "Fechamento por limite de risco",
             }
-            log.info(
-                f"Requizição para encerramento de posições pelo risco: {ordem_fechar}"
-            )
-            resultado = mt5.order_send(ordem_fechar)
 
-            if resultado is None:
-                log.error("Erro ao enviar ordem: resultado é None.")
-                continue
+            log.warning(f"[MT5] Encerrando posição {pos.ticket}")
+            resultado = mt5.order_send(ordem)
 
-            if resultado.retcode != mt5.TRADE_RETCODE_DONE:
-                log.error(f"Falha ao fechar posição {pos.ticket}: {resultado.retcode}")
+            if not resultado or resultado.retcode != mt5.TRADE_RETCODE_DONE:
+                log.error(f"[MT5] Falha ao fechar {pos.ticket}: {resultado}")
             else:
-                log.info(f"Posição {pos.ticket} fechada com sucesso.")
+                log.info(f"[MT5] Posição {pos.ticket} encerrada.")
 
 
-def cancelar_todas_ordens():
-    """Cancela todas órdens pendentes."""
+def cancelar_todas_ordens() -> None:
+    """
+    Cancela todas as ordens pendentes.
+    """
     with mt5_conexao():
         ordens = mt5.orders_get()
-    if not ordens:
-        log.info("Nenhuma ordem pendente para cancelar.")
-        return
 
-    with mt5_conexao():
+        if not ordens:
+            log.info("[MT5] Nenhuma ordem pendente.")
+            return
+
         for ordem in ordens:
             resultado = mt5.order_delete(ordem.ticket)
-            if resultado.retcode != mt5.TRADE_RETCODE_DONE:
-                log.error(
-                    f"Falha ao cancelar ordem {ordem.ticket}: {resultado.retcode}"
-                )
+            if not resultado or resultado.retcode != mt5.TRADE_RETCODE_DONE:
+                log.error(f"[MT5] Falha ao cancelar ordem {ordem.ticket}")
             else:
-                log.info(f"Ordem {ordem.ticket} cancelada com sucesso.")
+                log.info(f"[MT5] Ordem {ordem.ticket} cancelada.")
 
 
-def risco_excedido(limite):
-    """Verifica se o loss limit do dia foi atingido."""
+def risco_excedido(limite: float) -> bool:
+    """
+    Verifica se o prejuízo diário ultrapassou o limite configurado.
+    """
     try:
-        total_lucro = calcular_lucro_total_dia()
-        if total_lucro <= limite:
-            log.info(
-                f"Limite de prejuízo excedido! prejuízo: {total_lucro:.2f}, limite: {limite:.2f}"
+        total = calcular_lucro_total_dia()
+        if total <= limite:
+            log.warning(
+                f"[RISCO] Excedido | resultado={total:.2f} limite={limite:.2f}"
             )
             return True
         return False
-    except Exception as e:
-        log.error(f"Erro ao verificar risco: {e}")
+    except Exception as exc:
+        log.error(f"[RISCO] Erro ao verificar limite: {exc}")
         return False

@@ -1,4 +1,8 @@
-"""Comando lucro - exibe os diferentes tipos de lucro."""
+"""
+Comando trades.
+
+Exibe lucros realizados, abertos e totais do dia.
+"""
 
 import click
 from mtcli.logger import setup_logger
@@ -8,49 +12,40 @@ from mtcli_risco.models.trades_model import (
     calcular_lucro_total_dia,
 )
 
-
 log = setup_logger()
 
 
 @click.command(
-    "trades", help="Exibe os lucros realizados, abertos e totais do dia atual."
+    "trades",
+    help="Exibe os lucros realizados, abertos e totais do dia.",
 )
 @click.version_option(package_name="mtcli-risco")
-@click.option(
-    "--aberto", "-a", is_flag=True, default=False, help="Exibe o lucro aberto."
-)
-@click.option(
-    "--realizado",
-    "-r",
-    is_flag=True,
-    default=False,
-    help="Exibe o lucro realizado do dia.",
-)
-@click.option(
-    "--total", "-t", is_flag=True, default=False, help="Exibe o lucro total do dia."
-)
-def trades(aberto, realizado, total):
-    """Exibe os lucros aberto, realizado e total do dia."""
-    lucro_aberto = obter_lucro_aberto()
-    lucro_realizado = calcular_lucro_realizado()
-    lucro_total = calcular_lucro_total_dia()
-
+@click.option("--aberto", "-a", is_flag=True, help="Exibe o lucro em aberto.")
+@click.option("--realizado", "-r", is_flag=True, help="Exibe o lucro realizado.")
+@click.option("--total", "-t", is_flag=True, help="Exibe o lucro total.")
+def trades_cmd(aberto: bool, realizado: bool, total: bool):
+    """
+    Exibe informações de lucro do dia atual.
+    """
     if aberto:
-        click.echo(f"{lucro_aberto:.2f}")
+        valor = obter_lucro_aberto()
+        click.echo(f"{valor:.2f}")
         return
 
     if realizado:
-        click.echo(f"{lucro_realizado:.2f}")
+        valor = calcular_lucro_realizado()
+        click.echo(f"{valor:.2f}")
         return
 
     if total:
-        click.echo(f"{lucro_total:.2f}")
+        valor = calcular_lucro_total_dia()
+        click.echo(f"{valor:.2f}")
         return
 
-    click.echo(f"lucro em aberto {lucro_aberto:.2f}")
-    click.echo(f"lucro realizado {lucro_realizado:.2f}")
-    click.echo(f"lucro total {lucro_total:.2f}")
+    aberto_v = obter_lucro_aberto()
+    realizado_v = calcular_lucro_realizado()
+    total_v = aberto_v + realizado_v
 
-
-if __name__ == "__main__":
-    trades()
+    click.echo(f"lucro em aberto: {aberto_v:.2f}")
+    click.echo(f"lucro realizado: {realizado_v:.2f}")
+    click.echo(f"lucro total: {total_v:.2f}")
