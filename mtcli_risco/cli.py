@@ -16,6 +16,6 @@ def risco_cli():
     pass
 
 
-cli.add_command(checar_cmd, name="checar")
-cli.add_command(monitorar_cmd, name="monitorar")
-cli.add_command(trades_cmd, name="trades")
+risco_cli.add_command(checar_cmd, name="checar")
+risco_cli.add_command(monitorar_cmd, name="monitorar")
+risco_cli.add_command(trades_cmd, name="trades")
