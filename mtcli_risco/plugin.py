@@ -2,7 +2,7 @@
 Registro do plugin mtcli-risco no mtcli principal.
 """
 
-from .cli import cli as risco_cli
+from .cli import risco_cli
 
 
 def register(main_cli):

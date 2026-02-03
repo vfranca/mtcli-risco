@@ -6,7 +6,7 @@ from .commands.trades import trades_cmd
 
 @click.group()
 @click.version_option(package_name="mtcli-risco")
-def cli():
+def risco_cli():
     """
     Plugin mtcli-risco.
 
