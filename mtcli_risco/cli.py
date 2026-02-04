@@ -6,6 +6,7 @@ import click
 from .commands.checar import checar_cmd
 from .commands.monitorar import monitorar_cmd
 from .commands.trades import trades_cmd
+from .commands.panic import panic_cmd
 
 
 @click.group()
@@ -23,3 +24,4 @@ def cli():
 cli.add_command(checar_cmd, name="checar")
 cli.add_command(monitorar_cmd, name="monitorar")
 cli.add_command(trades_cmd, name="trades")
+cli.add_command(panic_cmd, name="panic")
