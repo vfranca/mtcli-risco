@@ -5,7 +5,7 @@ Model de cálculos de lucro diário.
 import MetaTrader5 as mt5
 from datetime import datetime, time
 from mtcli.logger import setup_logger
-from mtcli_risco.mt5_context import mt5_conexao
+from mtcli.mt5_context import mt5_conexao
 
 log = setup_logger()
 

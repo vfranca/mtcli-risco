@@ -13,7 +13,7 @@ import os
 from datetime import date
 import MetaTrader5 as mt5
 from mtcli.logger import setup_logger
-from mtcli_risco.mt5_context import mt5_conexao
+from mtcli.mt5_context import mt5_conexao
 from .trades_model import calcular_lucro_total_dia
 
 log = setup_logger()

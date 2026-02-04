@@ -1,3 +1,7 @@
+"""
+Comando principal e registro dos subcomandos
+"""
+
 import click
 from .commands.checar import checar_cmd
 from .commands.monitorar import monitorar_cmd
@@ -6,7 +10,7 @@ from .commands.trades import trades_cmd
 
 @click.group()
 @click.version_option(package_name="mtcli-risco")
-def risco_cli():
+def cli():
     """
     Plugin mtcli-risco.
 
@@ -16,6 +20,6 @@ def risco_cli():
     pass
 
 
-risco_cli.add_command(checar_cmd, name="checar")
-risco_cli.add_command(monitorar_cmd, name="monitorar")
-risco_cli.add_command(trades_cmd, name="trades")
+cli.add_command(checar_cmd, name="checar")
+cli.add_command(monitorar_cmd, name="monitorar")
+cli.add_command(trades_cmd, name="trades")
