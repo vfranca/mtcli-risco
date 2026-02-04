@@ -1,10 +1,11 @@
 """
 Modo PANIC CLOSE.
 
-- Funciona em conta hedge e netting
-- Detecta market fechado
-- Reexecuta automaticamente quando o market abrir
-- Suporta modo DRY-RUN (simulação)
+Responsável por:
+- Encerrar TODAS as posições abertas (hedge ou netting)
+- Cancelar TODAS as ordens pendentes
+- Funcionar com market aberto ou fechado (retry automático)
+- Suportar modo DRY-RUN (simulação)
 """
 
 import time
@@ -16,16 +17,25 @@ log = setup_logger()
 
 
 def _trade_permitido() -> bool:
+    """
+    Verifica se a conta permite trading.
+    """
     info = mt5.account_info()
     return bool(info and info.trade_allowed)
 
 
 def _market_aberto(symbol: str) -> bool:
+    """
+    Verifica se o mercado do símbolo está aberto para trading.
+    """
     info = mt5.symbol_info(symbol)
     return bool(info and info.trade_mode == mt5.SYMBOL_TRADE_MODE_FULL)
 
 
 def _close_position(position, dry_run: bool = False) -> bool:
+    """
+    Fecha uma posição individual (compatível com hedge e netting).
+    """
     symbol = position.symbol
     tick = mt5.symbol_info_tick(symbol)
 
@@ -33,19 +43,19 @@ def _close_position(position, dry_run: bool = False) -> bool:
         log.error(f"[PANIC] Tick indisponível para {symbol}")
         return False
 
-    tipo = (
+    order_type = (
         mt5.ORDER_TYPE_SELL
         if position.type == mt5.ORDER_TYPE_BUY
         else mt5.ORDER_TYPE_BUY
     )
 
-    price = tick.bid if tipo == mt5.ORDER_TYPE_SELL else tick.ask
+    price = tick.bid if order_type == mt5.ORDER_TYPE_SELL else tick.ask
 
     request = {
         "action": mt5.TRADE_ACTION_DEAL,
         "symbol": symbol,
         "volume": position.volume,
-        "type": tipo,
+        "type": order_type,
         "price": price,
         "deviation": 20,
         "magic": 999999,
@@ -54,6 +64,7 @@ def _close_position(position, dry_run: bool = False) -> bool:
         "type_filling": mt5.ORDER_FILLING_IOC,
     }
 
+    # Conta hedge → precisa do ticket
     if position.ticket:
         request["position"] = position.ticket
 
@@ -65,13 +76,15 @@ def _close_position(position, dry_run: bool = False) -> bool:
 
     if not result:
         log.error(
-            f"[PANIC] order_send None | {symbol} | last_error={mt5.last_error()}"
+            f"[PANIC] order_send retornou None | "
+            f"{symbol} | last_error={mt5.last_error()}"
         )
         return False
 
     if result.retcode != mt5.TRADE_RETCODE_DONE:
         log.error(
-            f"[PANIC] Falha ao fechar {symbol} | retcode={result.retcode}"
+            f"[PANIC] Falha ao fechar posição {symbol} | "
+            f"retcode={result.retcode}"
         )
         return False
 
@@ -87,13 +100,21 @@ def panic_close_all(
     dry_run: bool = False,
 ) -> dict:
     """
-    Executa o fechamento emergencial de posições e ordens.
+    Executa o fechamento emergencial de TODAS as posições e ordens.
 
-    retry_on_market_open:
-        Reexecuta automaticamente quando o market abrir.
+    Parâmetros
+    ----------
+    retry_on_market_open : bool
+        Reexecuta automaticamente quando o market estiver fechado.
+    retry_interval : int
+        Intervalo (segundos) entre tentativas quando market fechado.
+    dry_run : bool
+        Simula as ações sem enviar ordens reais.
 
-    dry_run:
-        Simula ações sem enviar ordens.
+    Retorna
+    -------
+    dict
+        Estatísticas da execução do panic close.
     """
     stats = {
         "positions_total": 0,
@@ -105,6 +126,8 @@ def panic_close_all(
     }
 
     while True:
+        market_fechado = False
+
         with mt5_conexao():
             if not _trade_permitido():
                 log.critical("[PANIC] Trading desabilitado na conta!")
@@ -117,9 +140,7 @@ def panic_close_all(
             if positions:
                 stats["positions_total"] = len(positions)
 
-            market_fechado = False
-
-            # 1️⃣ Fechar posições
+            # 1️⃣ Fechamento de posições
             if positions:
                 for pos in positions:
                     if not _market_aberto(pos.symbol):
@@ -132,25 +153,40 @@ def panic_close_all(
                     if _close_position(pos, dry_run=dry_run):
                         stats["positions_closed"] += 1
 
-            # 2️⃣ Cancelar ordens pendentes
+            # 2️⃣ Cancelamento de ordens pendentes
             if orders:
                 for ordem in orders:
                     if dry_run:
                         log.warning(
-                            f"[PANIC][DRY] Cancelamento simulado | ticket={ordem.ticket}"
+                            f"[PANIC][DRY] Cancelamento simulado | "
+                            f"ticket={ordem.ticket}"
                         )
                         stats["orders_cancelled"] += 1
                         continue
 
-                    result = mt5.order_delete(ordem.ticket)
-                    if result and result.retcode == mt5.TRADE_RETCODE_DONE:
+                    request = {
+                        "action": mt5.TRADE_ACTION_REMOVE,
+                        "order": ordem.ticket,
+                    }
+
+                    result = mt5.order_send(request)
+
+                    if not result:
+                        log.error(
+                            f"[PANIC] Falha ao cancelar ordem {ordem.ticket} | "
+                            f"last_error={mt5.last_error()}"
+                        )
+                        continue
+
+                    if result.retcode == mt5.TRADE_RETCODE_DONE:
                         stats["orders_cancelled"] += 1
                         log.warning(
                             f"[PANIC] Ordem cancelada | ticket={ordem.ticket}"
                         )
                     else:
                         log.error(
-                            f"[PANIC] Falha ao cancelar ordem {ordem.ticket}"
+                            f"[PANIC] Falha ao cancelar ordem {ordem.ticket} | "
+                            f"retcode={result.retcode}"
                         )
 
         if not market_fechado:
@@ -162,7 +198,7 @@ def panic_close_all(
             break
 
         log.critical(
-            f"[PANIC] Market fechado. Repetindo em {retry_interval}s..."
+            f"[PANIC] Market fechado. Nova tentativa em {retry_interval}s..."
         )
         time.sleep(retry_interval)
 
