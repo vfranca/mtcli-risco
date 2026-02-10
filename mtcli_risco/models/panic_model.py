@@ -6,12 +6,15 @@ Responsável por:
 - Cancelar TODAS as ordens pendentes
 - Funcionar com market aberto ou fechado (retry automático)
 - Suportar modo DRY-RUN (simulação)
+- Acionar HARDSTOP via Sistema Operacional (Windows)
 """
 
 import time
 import MetaTrader5 as mt5
+
 from mtcli.logger import setup_logger
 from mtcli.mt5_context import mt5_conexao
+from mtcli_risco.models.hardstop_model import hardstop
 
 log = setup_logger()
 
@@ -64,7 +67,7 @@ def _close_position(position, dry_run: bool = False) -> bool:
         "type_filling": mt5.ORDER_FILLING_IOC,
     }
 
-    # Conta hedge → precisa do ticket
+    # Conta hedge → fechamento por ticket
     if position.ticket:
         request["position"] = position.ticket
 
@@ -123,6 +126,7 @@ def panic_close_all(
         "market_closed": False,
         "trade_disabled": False,
         "dry_run": dry_run,
+        "hardstop_executed": False,
     }
 
     while True:
@@ -132,7 +136,7 @@ def panic_close_all(
             if not _trade_permitido():
                 log.critical("[PANIC] Trading desabilitado na conta!")
                 stats["trade_disabled"] = True
-                return stats
+                break
 
             positions = mt5.positions_get()
             orders = mt5.orders_get()
@@ -201,6 +205,13 @@ def panic_close_all(
             f"[PANIC] Market fechado. Nova tentativa em {retry_interval}s..."
         )
         time.sleep(retry_interval)
+
+    # 3️⃣ HARDSTOP via Sistema Operacional
+    if not dry_run:
+        hardstop()
+        stats["hardstop_executed"] = True
+    else:
+        log.warning("[PANIC][DRY] HARDSTOP não executado (modo simulação)")
 
     log.critical(f"[PANIC] Resultado final: {stats}")
     return stats
