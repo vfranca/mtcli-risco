@@ -9,12 +9,11 @@ Responsável por:
 
 import os
 import subprocess
-import signal
 from mtcli.logger import setup_logger
+from mtcli_risco.conf import MT5_TERMINAL_PATH
 
 log = setup_logger()
 
-MT5_PROCESS_NAME = "terminal64.exe"
 FIREWALL_RULE_NAME = "MT5_HARDSTOP_BLOCK"
 
 
@@ -40,14 +39,16 @@ def kill_mt5_process() -> None:
     """
     Encerra o processo do MetaTrader 5 à força.
     """
-    log.critical("[HARDSTOP] Encerrando processo do MT5")
+    exe_name = os.path.basename(MT5_TERMINAL_PATH)
+
+    log.critical(f"[HARDSTOP] Encerrando processo {exe_name}")
 
     _run(
         [
             "taskkill",
-            "/F",   # força
+            "/F",
             "/IM",
-            MT5_PROCESS_NAME,
+            exe_name,
         ]
     )
 
@@ -56,9 +57,11 @@ def block_mt5_firewall() -> None:
     """
     Bloqueia qualquer tráfego de rede do MT5 via Firewall do Windows.
     """
-    log.critical("[HARDSTOP] Bloqueando tráfego de rede do MT5 (Firewall)")
+    log.critical(
+        f"[HARDSTOP] Bloqueando tráfego de rede do MT5 | {MT5_TERMINAL_PATH}"
+    )
 
-    # Remove regra anterior se existir (idempotente)
+    # Remove regra anterior (idempotente)
     _run(
         [
             "netsh",
@@ -81,7 +84,7 @@ def block_mt5_firewall() -> None:
             f"name={FIREWALL_RULE_NAME}",
             "dir=out",
             "action=block",
-            f"program=%ProgramFiles%\\MetaTrader 5\\terminal64.exe",
+            f"program={MT5_TERMINAL_PATH}",
             "enable=yes",
         ]
     )
